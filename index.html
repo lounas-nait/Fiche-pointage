@@ -3,81 +3,116 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Fiche de Pointage Mensuelle</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.x/dist/tabler-icons.min.css">
+<title>Fiche de Pointage</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:Arial,sans-serif;background:#f5f5f5;min-height:100vh;display:flex;justify-content:center;align-items:flex-start;padding:16px}
-  .app{width:100%;max-width:420px;margin:0 auto}
-  .screen{display:none}
-  .screen.active{display:block}
-  .top-bar{text-align:center;padding:16px 0 8px;margin-bottom:8px}
-  .top-bar h1{font-size:15px;font-weight:700;color:#1f4e79;letter-spacing:.5px}
-  .top-bar p{font-size:12px;color:#888;margin-top:2px}
-  .step-indicator{display:flex;justify-content:center;gap:8px;margin-bottom:20px}
-  .step-dot{width:10px;height:10px;border-radius:50%;background:#ddd;transition:background .3s}
-  .step-dot.active{background:#1f4e79}
-  .step-dot.done{background:#27ae60}
-  .card{background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,0.05)}
-  .card-title{font-size:13px;font-weight:700;color:#1f4e79;margin-bottom:14px;text-transform:uppercase;letter-spacing:.5px}
-  label{font-size:12px;color:#666;display:block;margin-bottom:4px;font-weight:600}
-  input[type=text],input[type=time],select{width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;background:#fff;color:#333;font-size:14px;outline:none;transition:border .2s;-webkit-appearance:none}
-  input:focus,select:focus{border-color:#1f4e79}
-  .field{margin-bottom:12px}
-  .field:last-child{margin-bottom:0}
-  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  .btn-primary{width:100%;padding:14px;background:#1f4e79;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;margin-top:6px;letter-spacing:.3px;transition:background .2s}
-  .btn-primary:hover{background:#163d60}
-  .btn-secondary{width:100%;padding:12px;background:#fff;color:#1f4e79;border:1.5px solid #1f4e79;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;margin-top:8px;transition:all .2s}
-  .btn-secondary:hover{background:#eaf2fb}
-  .btn-danger{background:#e74c3c;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:13px;cursor:pointer}
-  .month-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;background:#fff;border:1px solid #e0e0e0;border-radius:10px;padding:10px 14px}
-  .month-nav button{padding:6px 14px;border:1px solid #ddd;border-radius:8px;background:#f8f8f8;color:#333;cursor:pointer;font-size:14px;font-weight:600;transition:all .2s}
-  .month-nav button:hover{background:#1f4e79;color:#fff;border-color:#1f4e79}
-  .month-nav span{font-size:15px;font-weight:700;color:#1f4e79}
-  .day-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #f0f0f0}
-  .day-row:last-child{border-bottom:none}
-  .day-row.weekend .day-label{color:#e74c3c}
-  .day-label{width:34px;text-align:center;font-size:11px;font-weight:700;color:#555;flex-shrink:0;line-height:1.3}
-  .time-wrap{flex:1;display:flex;gap:6px}
-  .time-wrap input{flex:1;padding:7px 6px;font-size:13px;min-width:0;text-align:center}
-  .hours-badge{font-size:12px;color:#27ae60;font-weight:700;min-width:38px;text-align:right;flex-shrink:0}
-  .hours-badge.empty{color:#ccc}
-  .total-bar{background:#eaf2fb;border:1px solid #b8d4ee;border-radius:10px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;margin:12px 0}
-  .total-bar .label{font-size:13px;color:#1f4e79;font-weight:600}
-  .total-bar .value{font-size:18px;font-weight:700;color:#1f4e79}
-  canvas#sigCanvas{border:1.5px solid #ddd;border-radius:10px;touch-action:none;display:block;background:#fafafa;cursor:crosshair}
-  .sig-hint{font-size:11px;color:#aaa;text-align:center;margin-top:6px}
-  .sig-actions{display:flex;gap:8px;margin-top:10px}
-  .sig-actions button{flex:1;padding:10px;border:1.5px solid #ddd;border-radius:8px;background:#fff;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s}
-  .sig-actions .btn-clear{color:#e74c3c;border-color:#e74c3c}
-  .sig-actions .btn-clear:hover{background:#fdf0ee}
-  .sig-actions .btn-ok{color:#27ae60;border-color:#27ae60}
-  .sig-actions .btn-ok:hover{background:#eafaf1}
-  .recap-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f0f0f0;font-size:13px}
-  .recap-row:last-child{border-bottom:none}
-  .recap-row .lbl{color:#888}
-  .recap-row .val{font-weight:700;color:#333}
-  .badge-total{background:#eaf2fb;color:#1f4e79;font-size:16px;font-weight:700;padding:2px 0}
-  .alert{background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:10px 14px;font-size:13px;color:#856404;margin-bottom:12px}
-  .success-bar{background:#eafaf1;border:1px solid #a9dfbf;border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:8px;margin-bottom:12px;font-size:13px;color:#1e8449;font-weight:600}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,sans-serif;background:#f0f4f8;min-height:100vh;padding:12px}
+.app{width:100%;max-width:430px;margin:0 auto}
+.screen{display:none}.screen.active{display:block}
+.top-bar{text-align:center;padding:14px 0 10px}
+.top-bar h1{font-size:15px;font-weight:700;color:#1f4e79;letter-spacing:.5px}
+.top-bar p{font-size:12px;color:#888;margin-top:3px}
+.step-indicator{display:flex;justify-content:center;gap:8px;margin-bottom:18px}
+.step-dot{width:10px;height:10px;border-radius:50%;background:#ddd;transition:background .3s}
+.step-dot.active{background:#1f4e79}.step-dot.done{background:#27ae60}
+.card{background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,0.05)}
+.card-title{font-size:12px;font-weight:700;color:#1f4e79;margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px}
+label{font-size:12px;color:#666;display:block;margin-bottom:4px;font-weight:600}
+input[type=text],input[type=time],select{width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;background:#fff;color:#333;font-size:14px;outline:none;transition:border .2s;-webkit-appearance:none;appearance:none}
+input:focus,select:focus{border-color:#1f4e79}
+.field{margin-bottom:12px}.field:last-child{margin-bottom:0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn-primary{width:100%;padding:14px;background:#1f4e79;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;margin-top:6px;transition:background .2s}
+.btn-primary:active{background:#163d60}
+.btn-secondary{width:100%;padding:12px;background:#fff;color:#1f4e79;border:1.5px solid #1f4e79;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;margin-top:8px}
+.btn-green{width:100%;padding:14px;background:#27ae60;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;margin-top:6px}
+.btn-outline-red{width:100%;padding:12px;background:#fff;color:#e74c3c;border:1.5px solid #e74c3c;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;margin-top:8px}
+.month-nav{display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid #e0e0e0;border-radius:10px;padding:10px 14px;margin-bottom:12px}
+.month-nav button{padding:6px 14px;border:1px solid #ddd;border-radius:8px;background:#f8f8f8;color:#333;cursor:pointer;font-size:14px;font-weight:600}
+.month-nav button:active{background:#1f4e79;color:#fff}
+.month-nav span{font-size:15px;font-weight:700;color:#1f4e79}
+.day-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #f0f0f0}
+.day-row:last-child{border-bottom:none}
+.day-label{width:36px;text-align:center;font-size:11px;font-weight:700;color:#555;flex-shrink:0;line-height:1.4}
+.day-label.weekend{color:#e74c3c}
+.time-wrap{flex:1;display:flex;gap:6px}
+.time-wrap input{flex:1;padding:7px 4px;font-size:13px;min-width:0;text-align:center}
+.hours-badge{font-size:12px;color:#27ae60;font-weight:700;min-width:36px;text-align:right;flex-shrink:0}
+.hours-badge.empty{color:#ccc}
+.total-bar{background:#eaf2fb;border:1px solid #b8d4ee;border-radius:10px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;margin:12px 0}
+.total-bar .lbl{font-size:13px;color:#1f4e79;font-weight:600}
+.total-bar .val{font-size:20px;font-weight:700;color:#1f4e79}
+.save-badge{display:flex;align-items:center;gap:6px;font-size:12px;color:#27ae60;font-weight:600;padding:8px 12px;background:#eafaf1;border-radius:8px;margin-bottom:10px;border:1px solid #a9dfbf}
+.save-badge span{font-size:18px}
+canvas#sigCanvas{border:1.5px solid #ddd;border-radius:10px;touch-action:none;display:block;background:#fafafa;cursor:crosshair}
+.sig-hint{font-size:11px;color:#aaa;text-align:center;margin-top:6px}
+.sig-actions{display:flex;gap:8px;margin-top:10px}
+.sig-actions button{flex:1;padding:10px;border:1.5px solid #ddd;border-radius:8px;background:#fff;font-size:13px;font-weight:600;cursor:pointer}
+.sig-clear{color:#e74c3c;border-color:#e74c3c !important}
+.sig-ok{color:#27ae60;border-color:#27ae60 !important}
+.recap-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f0f0f0;font-size:13px}
+.recap-row:last-child{border-bottom:none}
+.recap-row .lbl{color:#888}.recap-row .val{font-weight:700;color:#333}
+.alert-box{background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:10px 14px;font-size:13px;color:#856404;margin-bottom:10px}
+.success-box{background:#eafaf1;border:1px solid #a9dfbf;border-radius:8px;padding:10px 14px;font-size:13px;color:#1e8449;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.hist-item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f0f0f0}
+.hist-item:last-child{border-bottom:none}
+.hist-label{font-size:14px;font-weight:600;color:#333}
+.hist-sub{font-size:12px;color:#888;margin-top:2px}
+.hist-btn{padding:7px 14px;background:#1f4e79;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer}
+.empty-hist{text-align:center;padding:20px;color:#aaa;font-size:13px}
+.badge-new{display:inline-block;background:#e74c3c;color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;margin-left:6px;vertical-align:middle}
+.home-card{background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:20px 16px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,0.05);text-align:center}
+.home-card h2{font-size:22px;font-weight:700;color:#1f4e79;margin-bottom:4px}
+.home-card p{font-size:13px;color:#888}
+.home-card .big-total{font-size:36px;font-weight:700;color:#1f4e79;margin:10px 0 4px}
+.home-card .sub{font-size:12px;color:#aaa}
+.home-actions{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+.tab-bar{display:flex;gap:0;background:#fff;border:1px solid #e0e0e0;border-radius:10px;overflow:hidden;margin-bottom:14px}
+.tab-btn{flex:1;padding:10px;background:transparent;border:none;font-size:13px;font-weight:600;color:#888;cursor:pointer;border-right:1px solid #e0e0e0}
+.tab-btn:last-child{border-right:none}
+.tab-btn.active{background:#1f4e79;color:#fff}
 </style>
 </head>
 <body>
 <div class="app">
 
-  <!-- SCREEN 1: INFOS -->
-  <div id="screen-info" class="screen active">
+  <!-- HOME -->
+  <div id="screen-home" class="screen active">
     <div class="top-bar">
       <h1>FICHE DE POINTAGE</h1>
-      <p>Remplissez vos informations</p>
     </div>
-    <div class="step-indicator">
-      <div class="step-dot active" id="s1d1"></div>
-      <div class="step-dot" id="s1d2"></div>
-      <div class="step-dot" id="s1d3"></div>
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="showTab('tab-mois')">Ce mois</button>
+      <button class="tab-btn" onclick="showTab('tab-historique')">Historique</button>
     </div>
+
+    <div id="tab-mois">
+      <div class="home-card">
+        <p id="home-periode" style="font-size:13px;color:#888;margin-bottom:4px"></p>
+        <div class="big-total" id="home-total">0h00</div>
+        <div class="sub" id="home-jours"></div>
+      </div>
+      <div class="home-actions">
+        <button class="btn-primary" onclick="goToPointage()">✏️ Pointer ma journée</button>
+        <button class="btn-green" onclick="goToSignature()">📄 Signer et générer PDF</button>
+        <button class="btn-secondary" onclick="goToInfos()">⚙️ Modifier les infos</button>
+        <button class="btn-outline-red" onclick="confirmNewMonth()">🔄 Nouveau mois</button>
+      </div>
+    </div>
+
+    <div id="tab-historique" style="display:none">
+      <div class="card">
+        <div class="card-title">Mois précédents</div>
+        <div id="hist-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INFOS -->
+  <div id="screen-infos" class="screen">
+    <div class="top-bar"><h1>FICHE DE POINTAGE</h1><p>Vos informations</p></div>
     <div class="card">
       <div class="card-title">Informations</div>
       <div class="field"><label>Agence d'intérim</label><input type="text" id="agence" placeholder="Nom de l'agence"></div>
@@ -95,20 +130,14 @@
         <div class="field"><label>Année</label><input type="text" id="annee" placeholder="2025" maxlength="4"></div>
       </div>
     </div>
-    <button class="btn-primary" onclick="goToPointage()">Suivant →</button>
+    <button class="btn-primary" onclick="saveInfos()">Enregistrer</button>
+    <button class="btn-secondary" onclick="showScreen('screen-home')">← Retour</button>
   </div>
 
-  <!-- SCREEN 2: POINTAGE -->
+  <!-- POINTAGE -->
   <div id="screen-pointage" class="screen">
-    <div class="top-bar">
-      <h1>FICHE DE POINTAGE</h1>
-      <p id="pointage-subtitle"></p>
-    </div>
-    <div class="step-indicator">
-      <div class="step-dot done"></div>
-      <div class="step-dot active"></div>
-      <div class="step-dot"></div>
-    </div>
+    <div class="top-bar"><h1>FICHE DE POINTAGE</h1><p id="pointage-subtitle"></p></div>
+    <div class="save-badge"><span>💾</span> Sauvegarde automatique activée</div>
     <div class="month-nav">
       <button onclick="changeWeek(-1)">‹</button>
       <span id="week-label"></span>
@@ -116,24 +145,15 @@
     </div>
     <div class="card" id="days-container"></div>
     <div class="total-bar">
-      <span class="label">Total ce mois</span>
-      <span class="value" id="total-hours">0h00</span>
+      <span class="lbl">Total ce mois</span>
+      <span class="val" id="total-hours">0h00</span>
     </div>
-    <button class="btn-primary" onclick="goToSignature()">Signer et générer PDF →</button>
-    <button class="btn-secondary" onclick="showScreen('screen-info')">← Retour</button>
+    <button class="btn-primary" onclick="showScreen('screen-home')">← Retour accueil</button>
   </div>
 
-  <!-- SCREEN 3: SIGNATURE -->
+  <!-- SIGNATURE -->
   <div id="screen-signature" class="screen">
-    <div class="top-bar">
-      <h1>FICHE DE POINTAGE</h1>
-      <p>Signez pour valider</p>
-    </div>
-    <div class="step-indicator">
-      <div class="step-dot done"></div>
-      <div class="step-dot done"></div>
-      <div class="step-dot active"></div>
-    </div>
+    <div class="top-bar"><h1>FICHE DE POINTAGE</h1><p>Signez pour valider</p></div>
     <div class="card">
       <div class="card-title">Récapitulatif</div>
       <div id="recap-content"></div>
@@ -143,69 +163,131 @@
       <canvas id="sigCanvas" width="350" height="130"></canvas>
       <p class="sig-hint">Signez avec votre doigt ou la souris</p>
       <div class="sig-actions">
-        <button class="btn-clear" onclick="clearSig()"><i class="ti ti-trash"></i> Effacer</button>
-        <button class="btn-ok" onclick="validateSig()"><i class="ti ti-check"></i> Valider</button>
+        <button class="sig-clear" onclick="clearSig()">🗑 Effacer</button>
+        <button class="sig-ok" onclick="validateSig()">✓ Valider</button>
       </div>
     </div>
-    <div id="sig-alert" class="alert" style="display:none">Veuillez signer avant de générer le PDF.</div>
-    <div id="sig-success" class="success-bar" style="display:none"><i class="ti ti-circle-check"></i> Signature validée !</div>
-    <button class="btn-primary" id="btn-pdf" onclick="generatePDF()"><i class="ti ti-download"></i> Télécharger le PDF</button>
-    <button class="btn-secondary" onclick="showScreen('screen-pointage')">← Retour</button>
+    <div id="sig-alert" class="alert-box" style="display:none">Veuillez signer avant de générer le PDF.</div>
+    <div id="sig-success" class="success-box" style="display:none">✅ Signature validée !</div>
+    <button class="btn-green" onclick="generatePDF()">⬇️ Télécharger le PDF</button>
+    <button class="btn-secondary" onclick="showScreen('screen-home')">← Retour accueil</button>
   </div>
 
 </div>
 <script>
-const MOIS_NOMS=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+const MOIS=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
 const JOURS=['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
 let timeData={},currentWeekStart=0,nbJours=31,sigSigned=false,sigCtx,drawing=false,lastX,lastY;
 
-window.onload=()=>{
+/* ---- STORAGE ---- */
+function saveData(){
+  const state={
+    agence:v('agence'),entreprise:v('entreprise'),salarie:v('salarie'),
+    mois:v('mois'),annee:v('annee'),timeData
+  };
+  localStorage.setItem('pointage_current',JSON.stringify(state));
+}
+
+function loadData(){
+  const raw=localStorage.getItem('pointage_current');
+  if(!raw)return false;
+  const s=JSON.parse(raw);
+  set('agence',s.agence||'');set('entreprise',s.entreprise||'');
+  set('salarie',s.salarie||'');set('mois',s.mois||new Date().getMonth());
+  set('annee',s.annee||new Date().getFullYear());
+  timeData=s.timeData||{};
+  return true;
+}
+
+function getHistory(){return JSON.parse(localStorage.getItem('pointage_history')||'[]');}
+function saveHistory(h){localStorage.setItem('pointage_history',JSON.stringify(h));}
+
+function archiveCurrentMonth(){
+  const state=JSON.parse(localStorage.getItem('pointage_current')||'{}');
+  if(!state.salarie)return;
+  const h=getHistory();
+  const key=`${MOIS[parseInt(state.mois)||0]} ${state.annee}`;
+  h.unshift({key,state,archivedAt:new Date().toLocaleDateString('fr-FR')});
+  saveHistory(h);
+  localStorage.removeItem('pointage_current');
+  timeData={};
   const now=new Date();
-  document.getElementById('mois').value=now.getMonth();
-  document.getElementById('annee').value=now.getFullYear();
-};
-
-function getDaysInMonth(){
-  const m=parseInt(document.getElementById('mois').value);
-  const y=parseInt(document.getElementById('annee').value)||2025;
-  return new Date(y,m+1,0).getDate();
-}
-function getDate(day){
-  const m=parseInt(document.getElementById('mois').value);
-  const y=parseInt(document.getElementById('annee').value)||2025;
-  return new Date(y,m,day);
-}
-function isWeekend(day){const d=getDate(day).getDay();return d===0||d===6;}
-function timeToMin(t){if(!t)return null;const[h,m]=t.split(':').map(Number);return h*60+m;}
-function minToHM(m){if(m<0)m=0;return`${Math.floor(m/60)}h${String(m%60).padStart(2,'0')}`;}
-function calcH(day){
-  const d=timeData[day];
-  if(!d||!d.debut||!d.fin)return null;
-  let diff=timeToMin(d.fin)-timeToMin(d.debut);
-  if(diff<0)diff+=1440;
-  return diff;
-}
-function totalMin(){
-  let t=0;
-  for(let i=1;i<=nbJours;i++){const h=calcH(i);if(h)t+=h;}
-  return t;
+  set('mois',now.getMonth());set('annee',now.getFullYear());
+  set('agence',state.agence||'');set('entreprise',state.entreprise||'');
+  set('salarie',state.salarie||'');
 }
 
+/* ---- HELPERS ---- */
+function v(id){return document.getElementById(id)?.value||'';}
+function set(id,val){const el=document.getElementById(id);if(el)el.value=val;}
 function showScreen(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   window.scrollTo(0,0);
 }
+function showTab(id){
+  document.getElementById('tab-mois').style.display=id==='tab-mois'?'block':'none';
+  document.getElementById('tab-historique').style.display=id==='tab-historique'?'block':'none';
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>{
+    b.classList.toggle('active',(i===0&&id==='tab-mois')||(i===1&&id==='tab-historique'));
+  });
+  if(id==='tab-historique')renderHistory();
+}
+function getDays(){
+  const m=parseInt(v('mois'));const y=parseInt(v('annee'))||2025;
+  return new Date(y,m+1,0).getDate();
+}
+function getDate(day){
+  const m=parseInt(v('mois'));const y=parseInt(v('annee'))||2025;
+  return new Date(y,m,day);
+}
+function isWeekend(day){const d=getDate(day).getDay();return d===0||d===6;}
+function toMin(t){if(!t)return null;const[h,m]=t.split(':').map(Number);return h*60+m;}
+function toHM(m){if(m<0)m=0;return`${Math.floor(m/60)}h${String(m%60).padStart(2,'0')}`;}
+function calcH(day){
+  const d=timeData[day];if(!d||!d.debut||!d.fin)return null;
+  let diff=toMin(d.fin)-toMin(d.debut);if(diff<0)diff+=1440;return diff;
+}
+function totalMin(){let t=0;for(let i=1;i<=nbJours;i++){const h=calcH(i);if(h)t+=h;}return t;}
+function joursRemplis(){return Object.keys(timeData).filter(d=>timeData[d]?.debut&&timeData[d]?.fin).length;}
 
+/* ---- HOME ---- */
+function refreshHome(){
+  nbJours=getDays();
+  const moisNom=MOIS[parseInt(v('mois'))];
+  const annee=v('annee');
+  document.getElementById('home-periode').textContent=`${moisNom} ${annee}`;
+  document.getElementById('home-total').textContent=toHM(totalMin());
+  document.getElementById('home-jours').textContent=`${joursRemplis()} jour(s) renseigné(s) sur ${nbJours}`;
+}
+
+/* ---- INFOS ---- */
+function goToInfos(){
+  const loaded=loadData();
+  if(!loaded){const now=new Date();set('mois',now.getMonth());set('annee',now.getFullYear());}
+  showScreen('screen-infos');
+}
+function saveInfos(){
+  if(!v('salarie')||!v('agence')){alert('Remplissez au moins l\'agence et le nom.');return;}
+  saveData();
+  nbJours=getDays();
+  showScreen('screen-home');
+  refreshHome();
+}
+
+/* ---- POINTAGE ---- */
 function goToPointage(){
-  const agence=document.getElementById('agence').value.trim();
-  const salarie=document.getElementById('salarie').value.trim();
-  if(!agence||!salarie){alert('Merci de remplir l\'agence et le nom du salarié.');return;}
-  nbJours=getDaysInMonth();
+  if(!v('salarie')){goToInfos();return;}
+  nbJours=getDays();
   currentWeekStart=0;
-  const moisNom=MOIS_NOMS[parseInt(document.getElementById('mois').value)];
-  const annee=document.getElementById('annee').value;
-  document.getElementById('pointage-subtitle').textContent=`${salarie} — ${moisNom} ${annee}`;
+  // go to current day's week
+  const today=new Date().getDate();
+  const todayMonth=new Date().getMonth();
+  const curMonth=parseInt(v('mois'));
+  if(todayMonth===curMonth&&today<=nbJours){
+    currentWeekStart=Math.floor((today-1)/7)*7;
+  }
+  document.getElementById('pointage-subtitle').textContent=`${v('salarie')} — ${MOIS[parseInt(v('mois'))]} ${v('annee')}`;
   showScreen('screen-pointage');
   renderWeek();
 }
@@ -219,27 +301,30 @@ function renderWeek(){
     const dow=JOURS[date.getDay()];
     const we=isWeekend(d);
     const h=calcH(d);
+    const today=new Date();
+    const isToday=today.getDate()===d&&today.getMonth()===parseInt(v('mois'))&&today.getFullYear()===parseInt(v('annee'));
     const row=document.createElement('div');
-    row.className='day-row'+(we?' weekend':'');
+    row.className='day-row';
+    row.style.background=isToday?'#fffbea':'';
     row.innerHTML=`
-      <div class="day-label">${dow}<br>${d}</div>
+      <div class="day-label${we?' weekend':''}">${dow}<br>${d}${isToday?'<br><span style="font-size:9px;color:#f39c12">auj.</span>':''}</div>
       <div class="time-wrap">
         <input type="time" value="${timeData[d]?.debut||''}" onchange="setTime(${d},'debut',this.value)" placeholder="Début">
         <input type="time" value="${timeData[d]?.fin||''}" onchange="setTime(${d},'fin',this.value)" placeholder="Fin">
       </div>
-      <div class="hours-badge${h===null?' empty':''}">${h!==null?minToHM(h):'—'}</div>`;
+      <div class="hours-badge${h===null?' empty':''}">${h!==null?toHM(h):'—'}</div>`;
     container.appendChild(row);
   }
   document.getElementById('week-label').textContent=`Jours ${currentWeekStart+1}–${Math.min(currentWeekStart+7,nbJours)}`;
-  document.getElementById('total-hours').textContent=minToHM(totalMin());
+  document.getElementById('total-hours').textContent=toHM(totalMin());
 }
 
 function setTime(day,type,val){
   if(!timeData[day])timeData[day]={};
   timeData[day][type]=val;
+  saveData();
   renderWeek();
 }
-
 function changeWeek(dir){
   currentWeekStart+=dir*7;
   if(currentWeekStart<0)currentWeekStart=0;
@@ -247,25 +332,26 @@ function changeWeek(dir){
   renderWeek();
 }
 
+/* ---- SIGNATURE ---- */
 function goToSignature(){
-  showScreen('screen-signature');
+  if(!v('salarie')){goToInfos();return;}
+  nbJours=getDays();
   showRecap();
+  showScreen('screen-signature');
   initSig();
   document.getElementById('sig-alert').style.display='none';
   document.getElementById('sig-success').style.display='none';
 }
 
 function showRecap(){
-  const moisNom=MOIS_NOMS[parseInt(document.getElementById('mois').value)];
-  const annee=document.getElementById('annee').value;
-  const jours=Object.keys(timeData).filter(d=>timeData[d]?.debut&&timeData[d]?.fin).length;
+  const moisNom=MOIS[parseInt(v('mois'))];
   document.getElementById('recap-content').innerHTML=`
-    <div class="recap-row"><span class="lbl">Salarié</span><span class="val">${document.getElementById('salarie').value}</span></div>
-    <div class="recap-row"><span class="lbl">Agence</span><span class="val">${document.getElementById('agence').value}</span></div>
-    <div class="recap-row"><span class="lbl">Entreprise</span><span class="val">${document.getElementById('entreprise').value}</span></div>
-    <div class="recap-row"><span class="lbl">Période</span><span class="val">${moisNom} ${annee}</span></div>
-    <div class="recap-row"><span class="lbl">Jours renseignés</span><span class="val">${jours} / ${nbJours}</span></div>
-    <div class="recap-row"><span class="lbl">Total heures</span><span class="val badge-total">${minToHM(totalMin())}</span></div>
+    <div class="recap-row"><span class="lbl">Salarié</span><span class="val">${v('salarie')}</span></div>
+    <div class="recap-row"><span class="lbl">Agence</span><span class="val">${v('agence')}</span></div>
+    <div class="recap-row"><span class="lbl">Entreprise</span><span class="val">${v('entreprise')}</span></div>
+    <div class="recap-row"><span class="lbl">Période</span><span class="val">${moisNom} ${v('annee')}</span></div>
+    <div class="recap-row"><span class="lbl">Jours renseignés</span><span class="val">${joursRemplis()} / ${nbJours}</span></div>
+    <div class="recap-row"><span class="lbl">Total heures</span><span class="val" style="color:#1f4e79;font-size:16px">${toHM(totalMin())}</span></div>
     <div class="recap-row"><span class="lbl">Date de signature</span><span class="val">${new Date().toLocaleDateString('fr-FR')}</span></div>`;
 }
 
@@ -275,45 +361,90 @@ function initSig(){
   sigCtx=canvas.getContext('2d');
   sigCtx.strokeStyle='#1a1a2e';sigCtx.lineWidth=2.5;sigCtx.lineCap='round';sigCtx.lineJoin='round';
   sigSigned=false;
-  const getPos=(e)=>{
-    const r=canvas.getBoundingClientRect();
+  const getPos=(e)=>{const r=canvas.getBoundingClientRect();
     if(e.touches)return{x:e.touches[0].clientX-r.left,y:e.touches[0].clientY-r.top};
-    return{x:e.clientX-r.left,y:e.clientY-r.top};
-  };
+    return{x:e.clientX-r.left,y:e.clientY-r.top};};
   canvas.onmousedown=canvas.ontouchstart=(e)=>{e.preventDefault();drawing=true;const p=getPos(e);lastX=p.x;lastY=p.y;};
-  canvas.onmousemove=canvas.ontouchmove=(e)=>{
-    e.preventDefault();if(!drawing)return;
-    const p=getPos(e);
-    sigCtx.beginPath();sigCtx.moveTo(lastX,lastY);sigCtx.lineTo(p.x,p.y);sigCtx.stroke();
-    lastX=p.x;lastY=p.y;sigSigned=true;
-  };
+  canvas.onmousemove=canvas.ontouchmove=(e)=>{e.preventDefault();if(!drawing)return;
+    const p=getPos(e);sigCtx.beginPath();sigCtx.moveTo(lastX,lastY);sigCtx.lineTo(p.x,p.y);sigCtx.stroke();
+    lastX=p.x;lastY=p.y;sigSigned=true;};
   canvas.onmouseup=canvas.ontouchend=(e)=>{e.preventDefault();drawing=false;};
 }
-
-function clearSig(){
-  const c=document.getElementById('sigCanvas');
-  sigCtx.clearRect(0,0,c.width,c.height);
-  sigSigned=false;
-  document.getElementById('sig-success').style.display='none';
-  document.getElementById('sig-alert').style.display='none';
-}
-
+function clearSig(){sigCtx.clearRect(0,0,document.getElementById('sigCanvas').width,130);sigSigned=false;document.getElementById('sig-success').style.display='none';}
 function validateSig(){
   if(!sigSigned){document.getElementById('sig-alert').style.display='block';return;}
   document.getElementById('sig-alert').style.display='none';
   document.getElementById('sig-success').style.display='flex';
 }
 
+/* ---- NOUVEAU MOIS ---- */
+function confirmNewMonth(){
+  if(!confirm(`Archiver ${MOIS[parseInt(v('mois'))]} ${v('annee')} et démarrer un nouveau mois ?\n\nLes données seront sauvegardées dans l'historique.`))return;
+  archiveCurrentMonth();
+  saveData();
+  refreshHome();
+  alert('Nouveau mois démarré ! Pensez à mettre à jour le mois dans les infos.');
+  goToInfos();
+}
+
+/* ---- HISTORIQUE ---- */
+function renderHistory(){
+  const h=getHistory();
+  const el=document.getElementById('hist-list');
+  if(!h.length){el.innerHTML='<div class="empty-hist">Aucun mois archivé pour l\'instant.</div>';return;}
+  el.innerHTML=h.map((item,i)=>`
+    <div class="hist-item">
+      <div>
+        <div class="hist-label">${item.key}</div>
+        <div class="hist-sub">Archivé le ${item.archivedAt} · ${toHM(calcTotalFromState(item.state))} travaillées</div>
+      </div>
+      <button class="hist-btn" onclick="regenPDF(${i})">PDF</button>
+    </div>`).join('');
+}
+
+function calcTotalFromState(state){
+  const td=state.timeData||{};
+  const m=parseInt(state.mois);const y=parseInt(state.annee)||2025;
+  const days=new Date(y,m+1,0).getDate();
+  let total=0;
+  for(let i=1;i<=days;i++){
+    const d=td[i];if(!d||!d.debut||!d.fin)continue;
+    let diff=toMin(d.fin)-toMin(d.debut);if(diff<0)diff+=1440;total+=diff;
+  }
+  return total;
+}
+
+function regenPDF(histIndex){
+  const item=getHistory()[histIndex];
+  if(!item)return;
+  const s=item.state;
+  const savedTimeData=timeData;
+  const savedMois=v('mois');const savedAnnee=v('annee');
+  const savedSalarie=v('salarie');const savedAgence=v('agence');const savedEntreprise=v('entreprise');
+  timeData=s.timeData||{};
+  set('mois',s.mois);set('annee',s.annee);set('salarie',s.salarie);set('agence',s.agence);set('entreprise',s.entreprise);
+  nbJours=new Date(parseInt(s.annee),parseInt(s.mois)+1,0).getDate();
+  generatePDFDirect(null);
+  timeData=savedTimeData;
+  set('mois',savedMois);set('annee',savedAnnee);set('salarie',savedSalarie);set('agence',savedAgence);set('entreprise',savedEntreprise);
+  nbJours=getDays();
+}
+
+/* ---- PDF ---- */
 function generatePDF(){
   if(!sigSigned){document.getElementById('sig-alert').style.display='block';return;}
+  generatePDFDirect(document.getElementById('sigCanvas'));
+}
+
+function generatePDFDirect(sigCanvas){
   const{jsPDF}=window.jspdf;
   const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
   const pw=210,margin=15;
-  const moisNom=MOIS_NOMS[parseInt(document.getElementById('mois').value)];
-  const annee=document.getElementById('annee').value;
-  const agence=document.getElementById('agence').value;
-  const entreprise=document.getElementById('entreprise').value;
-  const salarie=document.getElementById('salarie').value;
+  const moisNom=MOIS[parseInt(v('mois'))];
+  const annee=v('annee');
+  const agence=v('agence');
+  const entreprise=v('entreprise');
+  const salarie=v('salarie');
   const today=new Date().toLocaleDateString('fr-FR');
 
   doc.setFont('helvetica','bold');doc.setFontSize(14);
@@ -341,26 +472,27 @@ function generatePDF(){
   y+=rowH+1;
 
   doc.setTextColor(0,0,0);doc.setFont('helvetica','normal');doc.setFontSize(9);
-  for(let d=1;d<=nbJours;d++){
+  const localNbJours=nbJours;
+  for(let d=1;d<=localNbJours;d++){
     const bg=d%2===0?[242,242,242]:[255,255,255];
     doc.setFillColor(...bg);doc.rect(margin,y,tableW,rowH,'F');
     doc.setDrawColor(200,200,200);doc.rect(margin,y,tableW,rowH,'S');
-    const td=timeData[d];
-    const date=getDate(d);
-    const dn=JOURS[date.getDay()]+' '+d;
-    const debut=td?.debut||'';
-    const fin=td?.fin||'';
-    const mins=calcH(d);
-    const heures=mins!==null?minToHM(mins):'';
+    const m2=parseInt(v('mois'));const yr=parseInt(v('annee'))||2025;
+    const date2=new Date(yr,m2,d);
+    const dn=JOURS[date2.getDay()]+' '+d;
+    const td2=timeData[d];
+    const debut=td2?.debut||'';const fin=td2?.fin||'';
+    let mins=null;
+    if(debut&&fin){let diff=toMin(fin)-toMin(debut);if(diff<0)diff+=1440;mins=diff;}
+    const heures=mins!==null?toHM(mins):'';
+    const we2=[0,6].includes(date2.getDay());
     cx=margin;
-    [dn,debut,fin,heures,''].forEach((v,i)=>{
-      if(isWeekend(d)&&i===0)doc.setTextColor(200,50,50);
-      else doc.setTextColor(0,0,0);
-      doc.text(v,cx+colW[i]/2,y+4.5,{align:'center'});
-      cx+=colW[i];
+    [dn,debut,fin,heures,''].forEach((val2,i)=>{
+      doc.setTextColor(we2&&i===0?200:0,we2&&i===0?50:0,0);
+      doc.text(val2,cx+colW[i]/2,y+4.5,{align:'center'});cx+=colW[i];
     });
     y+=rowH;
-    if(y>265&&d<nbJours){doc.addPage();y=20;}
+    if(y>265&&d<localNbJours){doc.addPage();y=20;}
   }
 
   y+=5;
@@ -371,18 +503,18 @@ function generatePDF(){
   doc.setTextColor(31,78,121);
   doc.text('TOTAL HEURES TRAVAILLÉES',margin+(colW[0]+colW[1]+colW[2])/2,y+6,{align:'center'});
   doc.setTextColor(39,174,96);
-  doc.text(minToHM(totalMin()),margin+colW[0]+colW[1]+colW[2]+colW[3]/2,y+6,{align:'center'});
+  doc.text(toHM(totalMin()),margin+colW[0]+colW[1]+colW[2]+colW[3]/2,y+6,{align:'center'});
 
   y+=18;
   if(y>270){doc.addPage();y=20;}
   doc.setTextColor(0,0,0);doc.setFont('helvetica','bold');doc.setFontSize(10);
   doc.text('Signature du salarié :',margin,y);
   doc.text('Date :',pw/2+10,y);
-  doc.setFont('helvetica','normal');
-  doc.text(today,pw/2+24,y);
+  doc.setFont('helvetica','normal');doc.text(today,pw/2+24,y);
 
-  const sigCanvas=document.getElementById('sigCanvas');
-  doc.addImage(sigCanvas.toDataURL('image/png'),margin,y+3,58,22);
+  if(sigCanvas){
+    doc.addImage(sigCanvas.toDataURL('image/png'),margin,y+3,58,22);
+  }
   doc.setDrawColor(100,100,100);doc.line(margin,y+28,margin+65,y+28);
 
   y+=36;
@@ -390,9 +522,22 @@ function generatePDF(){
   doc.text("Cachet et signature de l'entreprise :",margin,y);
   doc.line(margin,y+20,margin+85,y+20);
 
-  const fn=`pointage_${salarie.replace(/\s+/g,'_')}_${moisNom}_${annee}.pdf`;
-  doc.save(fn);
+  doc.save(`pointage_${salarie.replace(/\s+/g,'_')}_${moisNom}_${annee}.pdf`);
 }
+
+/* ---- INIT ---- */
+(function init(){
+  const loaded=loadData();
+  if(!loaded){
+    const now=new Date();
+    set('mois',now.getMonth());set('annee',now.getFullYear());
+    showScreen('screen-infos');
+    return;
+  }
+  nbJours=getDays();
+  refreshHome();
+  showScreen('screen-home');
+})();
 </script>
 </body>
 </html>
