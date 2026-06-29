@@ -439,28 +439,30 @@ function generatePDFDirect(sigCanvas){
   const agence=v('agence');const entreprise=v('entreprise');const salarie=v('salarie');
   const today=new Date().toLocaleDateString('fr-FR');
 
-  doc.setFont('helvetica','bold');doc.setFontSize(14);
-  doc.text('FICHE DE POINTAGE MENSUELLE',pw/2,22,{align:'center'});
-  doc.setFontSize(10);
-  let y=34;
+  doc.setFont('helvetica','bold');doc.setFontSize(13);
+  doc.text('FICHE DE POINTAGE MENSUELLE',pw/2,18,{align:'center'});
+  doc.setFontSize(9);
+  let y=27;
   [["Agence d'intérim :",agence],['Entreprise utilisatrice :',entreprise],['Nom du salarié :',salarie],['Mois / Année :',`${moisNom} ${annee}`]].forEach(([lbl,val])=>{
     doc.setFont('helvetica','bold');doc.text(lbl,margin,y);
-    doc.setFont('helvetica','normal');doc.text(val||'',margin+54,y);y+=7;
+    doc.setFont('helvetica','normal');doc.text(val||'',margin+50,y);y+=5.5;
   });
 
-  y+=4;
-  const colW=[18,42,42,54,34];const rowH=6.5;const tableW=colW.reduce((a,b)=>a+b,0);
-  doc.setFillColor(31,78,121);doc.rect(margin,y,tableW,rowH+1,'F');
-  doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(8.5);
-  let cx=margin;
-  ['Jour','Heure début','Heure fin','Heures travaillées','Observations'].forEach((h,i)=>{doc.text(h,cx+colW[i]/2,y+5,{align:'center'});cx+=colW[i];});
-  y+=rowH+1;
-
-  doc.setTextColor(0,0,0);doc.setFont('helvetica','normal');doc.setFontSize(9);
+  y+=3;
+  const colW=[16,40,40,52,32];const tableW=colW.reduce((a,b)=>a+b,0);
   const localNbJours=nbJours;
+  const rowH=(230-y)/localNbJours;
+
+  doc.setFillColor(31,78,121);doc.rect(margin,y,tableW,5.5,'F');
+  doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(7.5);
+  let cx=margin;
+  ['Jour','Heure début','Heure fin','Heures travaillées','Observations'].forEach((h,i)=>{doc.text(h,cx+colW[i]/2,y+3.8,{align:'center'});cx+=colW[i];});
+  y+=5.5;
+
+  doc.setTextColor(0,0,0);doc.setFont('helvetica','normal');doc.setFontSize(7.5);
   for(let d=1;d<=localNbJours;d++){
     doc.setFillColor(...(d%2===0?[242,242,242]:[255,255,255]));doc.rect(margin,y,tableW,rowH,'F');
-    doc.setDrawColor(200,200,200);doc.rect(margin,y,tableW,rowH,'S');
+    doc.setDrawColor(210,210,210);doc.rect(margin,y,tableW,rowH,'S');
     const m2=parseInt(v('mois'));const yr=parseInt(v('annee'))||2025;
     const date2=new Date(yr,m2,d);
     const dn=JOURS[date2.getDay()]+' '+d;
@@ -470,29 +472,28 @@ function generatePDFDirect(sigCanvas){
     cx=margin;
     [dn,debut,fin,mins!==null?toHM(mins):'',''].forEach((val2,i)=>{
       doc.setTextColor(we2&&i===0?200:0,we2&&i===0?50:0,0);
-      doc.text(val2,cx+colW[i]/2,y+4.5,{align:'center'});cx+=colW[i];
+      doc.text(val2,cx+colW[i]/2,y+rowH*0.65,{align:'center'});cx+=colW[i];
     });
     y+=rowH;
-    if(y>265&&d<localNbJours){doc.addPage();y=20;}
   }
 
-  y+=5;
-  doc.setFillColor(214,228,240);doc.rect(margin,y,colW[0]+colW[1]+colW[2],9,'F');
-  doc.setFillColor(232,245,224);doc.rect(margin+colW[0]+colW[1]+colW[2],y,colW[3],9,'F');
-  doc.setFillColor(214,228,240);doc.rect(margin+colW[0]+colW[1]+colW[2]+colW[3],y,colW[4],9,'F');
-  doc.setFont('helvetica','bold');doc.setFontSize(9);
-  doc.setTextColor(31,78,121);doc.text('TOTAL HEURES TRAVAILLÉES',margin+(colW[0]+colW[1]+colW[2])/2,y+6,{align:'center'});
-  doc.setTextColor(39,174,96);doc.text(toHM(totalMin()),margin+colW[0]+colW[1]+colW[2]+colW[3]/2,y+6,{align:'center'});
+  y+=3;
+  doc.setFillColor(214,228,240);doc.rect(margin,y,colW[0]+colW[1]+colW[2],7,'F');
+  doc.setFillColor(232,245,224);doc.rect(margin+colW[0]+colW[1]+colW[2],y,colW[3],7,'F');
+  doc.setFillColor(214,228,240);doc.rect(margin+colW[0]+colW[1]+colW[2]+colW[3],y,colW[4],7,'F');
+  doc.setFont('helvetica','bold');doc.setFontSize(8);
+  doc.setTextColor(31,78,121);doc.text('TOTAL HEURES TRAVAILLÉES',margin+(colW[0]+colW[1]+colW[2])/2,y+4.8,{align:'center'});
+  doc.setTextColor(39,174,96);doc.text(toHM(totalMin()),margin+colW[0]+colW[1]+colW[2]+colW[3]/2,y+4.8,{align:'center'});
 
-  y+=18;if(y>270){doc.addPage();y=20;}
-  doc.setTextColor(0,0,0);doc.setFont('helvetica','bold');doc.setFontSize(10);
+  y+=14;
+  doc.setTextColor(0,0,0);doc.setFont('helvetica','bold');doc.setFontSize(9);
   doc.text('Signature du salarié :',margin,y);
-  doc.text('Date :',pw/2+10,y);doc.setFont('helvetica','normal');doc.text(today,pw/2+24,y);
-  if(sigCanvas){doc.addImage(sigCanvas.toDataURL('image/png'),margin,y+3,58,22);}
-  doc.setDrawColor(100,100,100);doc.line(margin,y+28,margin+65,y+28);
-  y+=36;doc.setFont('helvetica','bold');
+  doc.text('Date :',pw/2+10,y);doc.setFont('helvetica','normal');doc.text(today,pw/2+22,y);
+  if(sigCanvas){doc.addImage(sigCanvas.toDataURL('image/png'),margin,y+2,50,18);}
+  doc.setDrawColor(100,100,100);doc.line(margin,y+23,margin+58,y+23);
+  y+=30;doc.setFont('helvetica','bold');
   doc.text("Cachet et signature de l'entreprise :",margin,y);
-  doc.line(margin,y+20,margin+85,y+20);
+  doc.line(margin,y+16,margin+80,y+16);
 
   doc.save(`pointage_${salarie.replace(/\s+/g,'_')}_${moisNom}_${annee}.pdf`);
 }
