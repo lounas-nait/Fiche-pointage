@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Fiche de Pointage Mensuelle</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.x/dist/tabler-icons.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Arial,sans-serif;background:#f5f5f5;min-height:100vh;display:flex;justify-content:center;align-items:flex-start;padding:16px}
+  .app{width:100%;max-width:420px;margin:0 auto}
+  .screen{display:none}
+  .screen.active{display:block}
+  .top-bar{text-align:center;padding:16px 0 8px;margin-bottom:8px}
+  .top-bar h1{font-size:15px;font-weight:700;color:#1f4e79;letter-spacing:.5px}
+  .top-bar p{font-size:12px;color:#888;margin-top:2px}
+  .step-indicator{display:flex;justify-content:center;gap:8px;margin-bottom:20px}
+  .step-dot{width:10px;height:10px;border-radius:50%;background:#ddd;transition:background .3s}
+  .step-dot.active{background:#1f4e79}
+  .step-dot.done{background:#27ae60}
+  .card{background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,0.05)}
+  .card-title{font-size:13px;font-weight:700;color:#1f4e79;margin-bottom:14px;text-transform:uppercase;letter-spacing:.5px}
+  label{font-size:12px;color:#666;display:block;margin-bottom:4px;font-weight:600}
+  input[type=text],input[type=time],select{width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;background:#fff;color:#333;font-size:14px;outline:none;transition:border .2s;-webkit-appearance:none}
+  input:focus,select:focus{border-color:#1f4e79}
+  .field{margin-bottom:12px}
+  .field:last-child{margin-bottom:0}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .btn-primary{width:100%;padding:14px;background:#1f4e79;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;margin-top:6px;letter-spacing:.3px;transition:background .2s}
+  .btn-primary:hover{background:#163d60}
+  .btn-secondary{width:100%;padding:12px;background:#fff;color:#1f4e79;border:1.5px solid #1f4e79;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;margin-top:8px;transition:all .2s}
+  .btn-secondary:hover{background:#eaf2fb}
+  .btn-danger{background:#e74c3c;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:13px;cursor:pointer}
+  .month-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;background:#fff;border:1px solid #e0e0e0;border-radius:10px;padding:10px 14px}
+  .month-nav button{padding:6px 14px;border:1px solid #ddd;border-radius:8px;background:#f8f8f8;color:#333;cursor:pointer;font-size:14px;font-weight:600;transition:all .2s}
+  .month-nav button:hover{background:#1f4e79;color:#fff;border-color:#1f4e79}
+  .month-nav span{font-size:15px;font-weight:700;color:#1f4e79}
+  .day-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #f0f0f0}
+  .day-row:last-child{border-bottom:none}
+  .day-row.weekend .day-label{color:#e74c3c}
+  .day-label{width:34px;text-align:center;font-size:11px;font-weight:700;color:#555;flex-shrink:0;line-height:1.3}
+  .time-wrap{flex:1;display:flex;gap:6px}
+  .time-wrap input{flex:1;padding:7px 6px;font-size:13px;min-width:0;text-align:center}
+  .hours-badge{font-size:12px;color:#27ae60;font-weight:700;min-width:38px;text-align:right;flex-shrink:0}
+  .hours-badge.empty{color:#ccc}
+  .total-bar{background:#eaf2fb;border:1px solid #b8d4ee;border-radius:10px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;margin:12px 0}
+  .total-bar .label{font-size:13px;color:#1f4e79;font-weight:600}
+  .total-bar .value{font-size:18px;font-weight:700;color:#1f4e79}
+  canvas#sigCanvas{border:1.5px solid #ddd;border-radius:10px;touch-action:none;display:block;background:#fafafa;cursor:crosshair}
+  .sig-hint{font-size:11px;color:#aaa;text-align:center;margin-top:6px}
+  .sig-actions{display:flex;gap:8px;margin-top:10px}
+  .sig-actions button{flex:1;padding:10px;border:1.5px solid #ddd;border-radius:8px;background:#fff;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s}
+  .sig-actions .btn-clear{color:#e74c3c;border-color:#e74c3c}
+  .sig-actions .btn-clear:hover{background:#fdf0ee}
+  .sig-actions .btn-ok{color:#27ae60;border-color:#27ae60}
+  .sig-actions .btn-ok:hover{background:#eafaf1}
+  .recap-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f0f0f0;font-size:13px}
+  .recap-row:last-child{border-bottom:none}
+  .recap-row .lbl{color:#888}
+  .recap-row .val{font-weight:700;color:#333}
+  .badge-total{background:#eaf2fb;color:#1f4e79;font-size:16px;font-weight:700;padding:2px 0}
+  .alert{background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:10px 14px;font-size:13px;color:#856404;margin-bottom:12px}
+  .success-bar{background:#eafaf1;border:1px solid #a9dfbf;border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:8px;margin-bottom:12px;font-size:13px;color:#1e8449;font-weight:600}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- SCREEN 1: INFOS -->
+  <div id="screen-info" class="screen active">
+    <div class="top-bar">
+      <h1>FICHE DE POINTAGE</h1>
+      <p>Remplissez vos informations</p>
+    </div>
+    <div class="step-indicator">
+      <div class="step-dot active" id="s1d1"></div>
+      <div class="step-dot" id="s1d2"></div>
+      <div class="step-dot" id="s1d3"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Informations</div>
+      <div class="field"><label>Agence d'intérim</label><input type="text" id="agence" placeholder="Nom de l'agence"></div>
+      <div class="field"><label>Entreprise utilisatrice</label><input type="text" id="entreprise" placeholder="Nom de l'entreprise"></div>
+      <div class="field"><label>Nom du salarié</label><input type="text" id="salarie" placeholder="Prénom Nom"></div>
+      <div class="grid2">
+        <div class="field"><label>Mois</label>
+          <select id="mois">
+            <option value="0">Janvier</option><option value="1">Février</option><option value="2">Mars</option>
+            <option value="3">Avril</option><option value="4">Mai</option><option value="5">Juin</option>
+            <option value="6">Juillet</option><option value="7">Août</option><option value="8">Septembre</option>
+            <option value="9">Octobre</option><option value="10">Novembre</option><option value="11">Décembre</option>
+          </select>
+        </div>
+        <div class="field"><label>Année</label><input type="text" id="annee" placeholder="2025" maxlength="4"></div>
+      </div>
+    </div>
+    <button class="btn-primary" onclick="goToPointage()">Suivant →</button>
+  </div>
+
+  <!-- SCREEN 2: POINTAGE -->
+  <div id="screen-pointage" class="screen">
+    <div class="top-bar">
+      <h1>FICHE DE POINTAGE</h1>
+      <p id="pointage-subtitle"></p>
+    </div>
+    <div class="step-indicator">
+      <div class="step-dot done"></div>
+      <div class="step-dot active"></div>
+      <div class="step-dot"></div>
+    </div>
+    <div class="month-nav">
+      <button onclick="changeWeek(-1)">‹</button>
+      <span id="week-label"></span>
+      <button onclick="changeWeek(1)">›</button>
+    </div>
+    <div class="card" id="days-container"></div>
+    <div class="total-bar">
+      <span class="label">Total ce mois</span>
+      <span class="value" id="total-hours">0h00</span>
+    </div>
+    <button class="btn-primary" onclick="goToSignature()">Signer et générer PDF →</button>
+    <button class="btn-secondary" onclick="showScreen('screen-info')">← Retour</button>
+  </div>
+
+  <!-- SCREEN 3: SIGNATURE -->
+  <div id="screen-signature" class="screen">
+    <div class="top-bar">
+      <h1>FICHE DE POINTAGE</h1>
+      <p>Signez pour valider</p>
+    </div>
+    <div class="step-indicator">
+      <div class="step-dot done"></div>
+      <div class="step-dot done"></div>
+      <div class="step-dot active"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Récapitulatif</div>
+      <div id="recap-content"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Votre signature</div>
+      <canvas id="sigCanvas" width="350" height="130"></canvas>
+      <p class="sig-hint">Signez avec votre doigt ou la souris</p>
+      <div class="sig-actions">
+        <button class="btn-clear" onclick="clearSig()"><i class="ti ti-trash"></i> Effacer</button>
+        <button class="btn-ok" onclick="validateSig()"><i class="ti ti-check"></i> Valider</button>
+      </div>
+    </div>
+    <div id="sig-alert" class="alert" style="display:none">Veuillez signer avant de générer le PDF.</div>
+    <div id="sig-success" class="success-bar" style="display:none"><i class="ti ti-circle-check"></i> Signature validée !</div>
+    <button class="btn-primary" id="btn-pdf" onclick="generatePDF()"><i class="ti ti-download"></i> Télécharger le PDF</button>
+    <button class="btn-secondary" onclick="showScreen('screen-pointage')">← Retour</button>
+  </div>
+
+</div>
+<script>
+const MOIS_NOMS=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+const JOURS=['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+let timeData={},currentWeekStart=0,nbJours=31,sigSigned=false,sigCtx,drawing=false,lastX,lastY;
+
+window.onload=()=>{
+  const now=new Date();
+  document.getElementById('mois').value=now.getMonth();
+  document.getElementById('annee').value=now.getFullYear();
+};
+
+function getDaysInMonth(){
+  const m=parseInt(document.getElementById('mois').value);
+  const y=parseInt(document.getElementById('annee').value)||2025;
+  return new Date(y,m+1,0).getDate();
+}
+function getDate(day){
+  const m=parseInt(document.getElementById('mois').value);
+  const y=parseInt(document.getElementById('annee').value)||2025;
+  return new Date(y,m,day);
+}
+function isWeekend(day){const d=getDate(day).getDay();return d===0||d===6;}
+function timeToMin(t){if(!t)return null;const[h,m]=t.split(':').map(Number);return h*60+m;}
+function minToHM(m){if(m<0)m=0;return`${Math.floor(m/60)}h${String(m%60).padStart(2,'0')}`;}
+function calcH(day){
+  const d=timeData[day];
+  if(!d||!d.debut||!d.fin)return null;
+  let diff=timeToMin(d.fin)-timeToMin(d.debut);
+  if(diff<0)diff+=1440;
+  return diff;
+}
+function totalMin(){
+  let t=0;
+  for(let i=1;i<=nbJours;i++){const h=calcH(i);if(h)t+=h;}
+  return t;
+}
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function goToPointage(){
+  const agence=document.getElementById('agence').value.trim();
+  const salarie=document.getElementById('salarie').value.trim();
+  if(!agence||!salarie){alert('Merci de remplir l\'agence et le nom du salarié.');return;}
+  nbJours=getDaysInMonth();
+  currentWeekStart=0;
+  const moisNom=MOIS_NOMS[parseInt(document.getElementById('mois').value)];
+  const annee=document.getElementById('annee').value;
+  document.getElementById('pointage-subtitle').textContent=`${salarie} — ${moisNom} ${annee}`;
+  showScreen('screen-pointage');
+  renderWeek();
+}
+
+function renderWeek(){
+  const container=document.getElementById('days-container');
+  container.innerHTML='';
+  const end=Math.min(currentWeekStart+7,nbJours);
+  for(let d=currentWeekStart+1;d<=end;d++){
+    const date=getDate(d);
+    const dow=JOURS[date.getDay()];
+    const we=isWeekend(d);
+    const h=calcH(d);
+    const row=document.createElement('div');
+    row.className='day-row'+(we?' weekend':'');
+    row.innerHTML=`
+      <div class="day-label">${dow}<br>${d}</div>
+      <div class="time-wrap">
+        <input type="time" value="${timeData[d]?.debut||''}" onchange="setTime(${d},'debut',this.value)" placeholder="Début">
+        <input type="time" value="${timeData[d]?.fin||''}" onchange="setTime(${d},'fin',this.value)" placeholder="Fin">
+      </div>
+      <div class="hours-badge${h===null?' empty':''}">${h!==null?minToHM(h):'—'}</div>`;
+    container.appendChild(row);
+  }
+  document.getElementById('week-label').textContent=`Jours ${currentWeekStart+1}–${Math.min(currentWeekStart+7,nbJours)}`;
+  document.getElementById('total-hours').textContent=minToHM(totalMin());
+}
+
+function setTime(day,type,val){
+  if(!timeData[day])timeData[day]={};
+  timeData[day][type]=val;
+  renderWeek();
+}
+
+function changeWeek(dir){
+  currentWeekStart+=dir*7;
+  if(currentWeekStart<0)currentWeekStart=0;
+  if(currentWeekStart>=nbJours)currentWeekStart=Math.max(0,nbJours-7);
+  renderWeek();
+}
+
+function goToSignature(){
+  showScreen('screen-signature');
+  showRecap();
+  initSig();
+  document.getElementById('sig-alert').style.display='none';
+  document.getElementById('sig-success').style.display='none';
+}
+
+function showRecap(){
+  const moisNom=MOIS_NOMS[parseInt(document.getElementById('mois').value)];
+  const annee=document.getElementById('annee').value;
+  const jours=Object.keys(timeData).filter(d=>timeData[d]?.debut&&timeData[d]?.fin).length;
+  document.getElementById('recap-content').innerHTML=`
+    <div class="recap-row"><span class="lbl">Salarié</span><span class="val">${document.getElementById('salarie').value}</span></div>
+    <div class="recap-row"><span class="lbl">Agence</span><span class="val">${document.getElementById('agence').value}</span></div>
+    <div class="recap-row"><span class="lbl">Entreprise</span><span class="val">${document.getElementById('entreprise').value}</span></div>
+    <div class="recap-row"><span class="lbl">Période</span><span class="val">${moisNom} ${annee}</span></div>
+    <div class="recap-row"><span class="lbl">Jours renseignés</span><span class="val">${jours} / ${nbJours}</span></div>
+    <div class="recap-row"><span class="lbl">Total heures</span><span class="val badge-total">${minToHM(totalMin())}</span></div>
+    <div class="recap-row"><span class="lbl">Date de signature</span><span class="val">${new Date().toLocaleDateString('fr-FR')}</span></div>`;
+}
+
+function initSig(){
+  const canvas=document.getElementById('sigCanvas');
+  canvas.width=Math.min(370,window.innerWidth-60);
+  sigCtx=canvas.getContext('2d');
+  sigCtx.strokeStyle='#1a1a2e';sigCtx.lineWidth=2.5;sigCtx.lineCap='round';sigCtx.lineJoin='round';
+  sigSigned=false;
+  const getPos=(e)=>{
+    const r=canvas.getBoundingClientRect();
+    if(e.touches)return{x:e.touches[0].clientX-r.left,y:e.touches[0].clientY-r.top};
+    return{x:e.clientX-r.left,y:e.clientY-r.top};
+  };
+  canvas.onmousedown=canvas.ontouchstart=(e)=>{e.preventDefault();drawing=true;const p=getPos(e);lastX=p.x;lastY=p.y;};
+  canvas.onmousemove=canvas.ontouchmove=(e)=>{
+    e.preventDefault();if(!drawing)return;
+    const p=getPos(e);
+    sigCtx.beginPath();sigCtx.moveTo(lastX,lastY);sigCtx.lineTo(p.x,p.y);sigCtx.stroke();
+    lastX=p.x;lastY=p.y;sigSigned=true;
+  };
+  canvas.onmouseup=canvas.ontouchend=(e)=>{e.preventDefault();drawing=false;};
+}
+
+function clearSig(){
+  const c=document.getElementById('sigCanvas');
+  sigCtx.clearRect(0,0,c.width,c.height);
+  sigSigned=false;
+  document.getElementById('sig-success').style.display='none';
+  document.getElementById('sig-alert').style.display='none';
+}
+
+function validateSig(){
+  if(!sigSigned){document.getElementById('sig-alert').style.display='block';return;}
+  document.getElementById('sig-alert').style.display='none';
+  document.getElementById('sig-success').style.display='flex';
+}
+
+function generatePDF(){
+  if(!sigSigned){document.getElementById('sig-alert').style.display='block';return;}
+  const{jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  const pw=210,margin=15;
+  const moisNom=MOIS_NOMS[parseInt(document.getElementById('mois').value)];
+  const annee=document.getElementById('annee').value;
+  const agence=document.getElementById('agence').value;
+  const entreprise=document.getElementById('entreprise').value;
+  const salarie=document.getElementById('salarie').value;
+  const today=new Date().toLocaleDateString('fr-FR');
+
+  doc.setFont('helvetica','bold');doc.setFontSize(14);
+  doc.text('FICHE DE POINTAGE MENSUELLE',pw/2,22,{align:'center'});
+
+  doc.setFontSize(10);
+  const infos=[["Agence d'intérim :",agence],['Entreprise utilisatrice :',entreprise],['Nom du salarié :',salarie],['Mois / Année :',`${moisNom} ${annee}`]];
+  let y=34;
+  infos.forEach(([lbl,val])=>{
+    doc.setFont('helvetica','bold');doc.text(lbl,margin,y);
+    doc.setFont('helvetica','normal');doc.text(val||'',margin+54,y);
+    y+=7;
+  });
+
+  y+=4;
+  const colW=[18,42,42,54,34];
+  const rowH=6.5;
+  const headers=['Jour','Heure début','Heure fin','Heures travaillées','Observations'];
+  const tableW=colW.reduce((a,b)=>a+b,0);
+
+  doc.setFillColor(31,78,121);doc.rect(margin,y,tableW,rowH+1,'F');
+  doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(8.5);
+  let cx=margin;
+  headers.forEach((h,i)=>{doc.text(h,cx+colW[i]/2,y+5,{align:'center'});cx+=colW[i];});
+  y+=rowH+1;
+
+  doc.setTextColor(0,0,0);doc.setFont('helvetica','normal');doc.setFontSize(9);
+  for(let d=1;d<=nbJours;d++){
+    const bg=d%2===0?[242,242,242]:[255,255,255];
+    doc.setFillColor(...bg);doc.rect(margin,y,tableW,rowH,'F');
+    doc.setDrawColor(200,200,200);doc.rect(margin,y,tableW,rowH,'S');
+    const td=timeData[d];
+    const date=getDate(d);
+    const dn=JOURS[date.getDay()]+' '+d;
+    const debut=td?.debut||'';
+    const fin=td?.fin||'';
+    const mins=calcH(d);
+    const heures=mins!==null?minToHM(mins):'';
+    cx=margin;
+    [dn,debut,fin,heures,''].forEach((v,i)=>{
+      if(isWeekend(d)&&i===0)doc.setTextColor(200,50,50);
+      else doc.setTextColor(0,0,0);
+      doc.text(v,cx+colW[i]/2,y+4.5,{align:'center'});
+      cx+=colW[i];
+    });
+    y+=rowH;
+    if(y>265&&d<nbJours){doc.addPage();y=20;}
+  }
+
+  y+=5;
+  doc.setFillColor(214,228,240);doc.rect(margin,y,colW[0]+colW[1]+colW[2],9,'F');
+  doc.setFillColor(232,245,224);doc.rect(margin+colW[0]+colW[1]+colW[2],y,colW[3],9,'F');
+  doc.setFillColor(214,228,240);doc.rect(margin+colW[0]+colW[1]+colW[2]+colW[3],y,colW[4],9,'F');
+  doc.setFont('helvetica','bold');doc.setFontSize(9);
+  doc.setTextColor(31,78,121);
+  doc.text('TOTAL HEURES TRAVAILLÉES',margin+(colW[0]+colW[1]+colW[2])/2,y+6,{align:'center'});
+  doc.setTextColor(39,174,96);
+  doc.text(minToHM(totalMin()),margin+colW[0]+colW[1]+colW[2]+colW[3]/2,y+6,{align:'center'});
+
+  y+=18;
+  if(y>270){doc.addPage();y=20;}
+  doc.setTextColor(0,0,0);doc.setFont('helvetica','bold');doc.setFontSize(10);
+  doc.text('Signature du salarié :',margin,y);
+  doc.text('Date :',pw/2+10,y);
+  doc.setFont('helvetica','normal');
+  doc.text(today,pw/2+24,y);
+
+  const sigCanvas=document.getElementById('sigCanvas');
+  doc.addImage(sigCanvas.toDataURL('image/png'),margin,y+3,58,22);
+  doc.setDrawColor(100,100,100);doc.line(margin,y+28,margin+65,y+28);
+
+  y+=36;
+  doc.setFont('helvetica','bold');
+  doc.text("Cachet et signature de l'entreprise :",margin,y);
+  doc.line(margin,y+20,margin+85,y+20);
+
+  const fn=`pointage_${salarie.replace(/\s+/g,'_')}_${moisNom}_${annee}.pdf`;
+  doc.save(fn);
+}
+</script>
+</body>
+</html>
